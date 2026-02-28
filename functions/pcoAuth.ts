@@ -75,19 +75,6 @@ Deno.serve(async (req) => {
     return Response.json({ success: true, org_name: orgName });
   }
 
-  if (action === 'getAuthUrl') {
-    const params = new URLSearchParams({
-      client_id: PCO_CLIENT_ID,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'registrations',
-      state: connectionId
-    });
-    return Response.json({
-      url: `https://api.planningcenteronline.com/oauth/authorize?${params}`
-    });
-  }
-
   if (action === 'getDecryptedToken') {
     // Internal use only - get decrypted access token
     const connections = await base44.asServiceRole.entities.Connection.filter({ id: connectionId });
