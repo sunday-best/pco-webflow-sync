@@ -50,6 +50,30 @@ Deno.serve(async (req) => {
 
   const redirectUri = `${APP_BASE_URL}/functions/webflowAuth`;
 
+  if (action === 'connectApiToken') {
+    const { token } = body;
+    if (!token) return Response.json({ error: 'token required' }, { status: 400 });
+
+    // Verify it works
+    const verifyRes = await fetch('https://api.webflow.com/v2/sites', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'accept-version': '2.0.0'
+      }
+    });
+
+    if (!verifyRes.ok) {
+      return Response.json({ error: 'Invalid Webflow API token - could not authenticate' }, { status: 401 });
+    }
+
+    const encryptedAccess = await encrypt(token);
+    await base44.asServiceRole.entities.Connection.update(connectionId, {
+      webflow_access_token: encryptedAccess
+    });
+
+    return Response.json({ success: true });
+  }
+
   if (action === 'getAuthUrl') {
     const params = new URLSearchParams({
       client_id: WEBFLOW_CLIENT_ID,

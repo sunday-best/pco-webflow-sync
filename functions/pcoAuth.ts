@@ -51,6 +51,36 @@ Deno.serve(async (req) => {
   // Build redirect URI
   const redirectUri = `${APP_BASE_URL}/functions/pcoAuth`;
 
+  if (action === 'connectPersonalToken') {
+    // PCO Personal Access Token - uses HTTP Basic auth (appId:secret)
+    const { appId, secret } = body;
+    if (!appId || !secret) return Response.json({ error: 'appId and secret required' }, { status: 400 });
+
+    const basicAuth = btoa(`${appId}:${secret}`);
+
+    // Verify token works and get org info
+    const orgRes = await fetch('https://api.planningcenteronline.com/people/v2/me', {
+      headers: { Authorization: `Basic ${basicAuth}` }
+    });
+
+    if (!orgRes.ok) {
+      return Response.json({ error: 'Invalid credentials - could not authenticate with Planning Center' }, { status: 401 });
+    }
+
+    const orgData = await orgRes.json();
+    const orgName = orgData?.data?.attributes?.name || 'Unknown Org';
+
+    // Encrypt and store - we store the basic auth string as the "access token"
+    const encryptedAccess = await encrypt(basicAuth);
+
+    await base44.asServiceRole.entities.Connection.update(connectionId, {
+      pco_access_token: encryptedAccess,
+      pco_organization_name: orgName
+    });
+
+    return Response.json({ success: true, org_name: orgName });
+  }
+
   if (action === 'getAuthUrl') {
     const params = new URLSearchParams({
       client_id: PCO_CLIENT_ID,
@@ -62,50 +92,6 @@ Deno.serve(async (req) => {
     return Response.json({
       url: `https://api.planningcenteronline.com/oauth/authorize?${params}`
     });
-  }
-
-  if (action === 'callback') {
-    // Exchange code for token
-    const tokenRes = await fetch('https://api.planningcenteronline.com/oauth/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        grant_type: 'authorization_code',
-        code,
-        client_id: PCO_CLIENT_ID,
-        client_secret: PCO_CLIENT_SECRET,
-        redirect_uri: redirectUri
-      })
-    });
-
-    if (!tokenRes.ok) {
-      const err = await tokenRes.text();
-      return Response.json({ error: 'Token exchange failed', details: err }, { status: 400 });
-    }
-
-    const tokens = await tokenRes.json();
-
-    // Fetch organization info
-    const orgRes = await fetch('https://api.planningcenteronline.com/people/v2/me', {
-      headers: { Authorization: `Bearer ${tokens.access_token}` }
-    });
-    const orgData = orgRes.ok ? await orgRes.json() : null;
-    const orgName = orgData?.data?.attributes?.name || 'Unknown Org';
-
-    // Encrypt tokens and save
-    const encryptedAccess = await encrypt(tokens.access_token);
-    const encryptedRefresh = tokens.refresh_token ? await encrypt(tokens.refresh_token) : null;
-
-    await base44.asServiceRole.entities.Connection.update(connectionId, {
-      pco_access_token: encryptedAccess,
-      pco_refresh_token: encryptedRefresh,
-      pco_token_expires_at: tokens.expires_in
-        ? new Date(Date.now() + tokens.expires_in * 1000).toISOString()
-        : null,
-      pco_organization_name: orgName
-    });
-
-    return Response.json({ success: true, org_name: orgName });
   }
 
   if (action === 'getDecryptedToken') {
