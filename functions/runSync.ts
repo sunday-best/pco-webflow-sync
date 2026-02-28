@@ -58,27 +58,33 @@ async function pcoRequest(token, path) {
 }
 
 async function fetchAllPcoEvents(pcoToken) {
-  const now = new Date().toISOString();
   let allEvents = [];
-  let nextUrl = `/registrations/v2/events?where[visible]=true&where[starts_at][gte]=${now}&per_page=100&include=location`;
+  let nextUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
 
   while (nextUrl) {
     const data = await withRetry(() => pcoRequest(pcoToken, nextUrl));
-    const events = data.data || [];
+    const signups = data.data || [];
     const included = data.included || [];
 
-    for (const event of events) {
-      const attrs = event.attributes || {};
-      
-      // Only public, upcoming events
-      if (!attrs.public && attrs.visible !== true) continue;
+    for (const signup of signups) {
+      const attrs = signup.attributes || {};
+
+      // Skip archived
+      if (attrs.archived) continue;
 
       // Find location from included
-      const locationRel = event.relationships?.location?.data;
-      const location = locationRel 
-        ? included.find(i => i.type === 'Location' && i.id === locationRel.id)
+      const locationRel = signup.relationships?.signup_location?.data;
+      const location = locationRel
+        ? included.find(i => i.type === 'SignupLocation' && i.id === locationRel.id)
         : null;
       const locAttrs = location?.attributes || {};
+
+      // Find next signup time
+      const nextTimeRel = signup.relationships?.next_signup_time?.data;
+      const nextTime = nextTimeRel
+        ? included.find(i => i.type === 'SignupTime' && i.id === nextTimeRel.id)
+        : null;
+      const nextTimeAttrs = nextTime?.attributes || {};
 
       const description = attrs.description || '';
       const descriptionPlain = description.replace(/<[^>]*>/g, '').trim();
@@ -92,20 +98,20 @@ async function fetchAllPcoEvents(pcoToken) {
       ].filter(Boolean).join(', ');
 
       allEvents.push({
-        'event.id': event.id,
+        'event.id': signup.id,
         'event.updated_at': attrs.updated_at,
         'event.name': attrs.name,
-        'event.summary': attrs.summary || '',
+        'event.summary': '',
         'event.description': description,
         'event.description_plain': descriptionPlain,
-        'event.starts_at': attrs.starts_at,
-        'event.ends_at': attrs.ends_at,
-        'event.all_day': attrs.all_day || false,
-        'event.public': attrs.public !== false,
+        'event.starts_at': nextTimeAttrs.starts_at || attrs.open_at || '',
+        'event.ends_at': nextTimeAttrs.ends_at || attrs.close_at || '',
+        'event.all_day': false,
+        'event.public': !attrs.archived,
         'event.archived': attrs.archived || false,
-        'event.registration_open': attrs.open_for_registrations || false,
-        'event.registration_url': attrs.registration_url || '',
-        'event.event_url': attrs.public_url || '',
+        'event.registration_open': !!(attrs.open_at && new Date(attrs.open_at) <= new Date() && (!attrs.close_at || new Date(attrs.close_at) >= new Date())),
+        'event.registration_url': attrs.new_registration_url || '',
+        'event.event_url': attrs.new_registration_url || '',
         'event.location_name': locAttrs.name || '',
         'event.location_address_line_1': locAttrs.street || '',
         'event.location_address_line_2': '',
@@ -114,13 +120,13 @@ async function fetchAllPcoEvents(pcoToken) {
         'event.location_postal_code': locAttrs.zip || '',
         'event.location_country': locAttrs.country || '',
         'event.location_full': locationFull,
-        'event.image_url': attrs.image_url || attrs.logo_url || '',
-        'event.thumbnail_url': attrs.thumbnail_url || '',
-        'event.capacity': attrs.capacity || null,
-        'event.spots_remaining': attrs.remaining_registrations || null,
-        'event.registrations_count': attrs.total_active_registrations || null,
-        'event.category': attrs.category || '',
-        'event.tags': (attrs.tag_names || []).join(', ')
+        'event.image_url': attrs.logo_url || '',
+        'event.thumbnail_url': attrs.logo_url || '',
+        'event.capacity': null,
+        'event.spots_remaining': null,
+        'event.registrations_count': null,
+        'event.category': '',
+        'event.tags': ''
       });
     }
 
