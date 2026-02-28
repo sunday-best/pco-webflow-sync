@@ -69,47 +69,6 @@ Deno.serve(async (req) => {
     return Response.json({ success: true });
   }
 
-  if (action === 'getAuthUrl') {
-    const params = new URLSearchParams({
-      client_id: WEBFLOW_CLIENT_ID,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'cms:read cms:write sites:read',
-      state: connectionId
-    });
-    return Response.json({
-      url: `https://webflow.com/oauth/authorize?${params}`
-    });
-  }
-
-  if (action === 'callback') {
-    const tokenRes = await fetch('https://api.webflow.com/oauth/access_token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        grant_type: 'authorization_code',
-        code,
-        client_id: WEBFLOW_CLIENT_ID,
-        client_secret: WEBFLOW_CLIENT_SECRET,
-        redirect_uri: redirectUri
-      })
-    });
-
-    if (!tokenRes.ok) {
-      const err = await tokenRes.text();
-      return Response.json({ error: 'Token exchange failed', details: err }, { status: 400 });
-    }
-
-    const tokens = await tokenRes.json();
-    const encryptedAccess = await encrypt(tokens.access_token);
-
-    await base44.asServiceRole.entities.Connection.update(connectionId, {
-      webflow_access_token: encryptedAccess
-    });
-
-    return Response.json({ success: true });
-  }
-
   if (action === 'getDecryptedToken') {
     const connections = await base44.asServiceRole.entities.Connection.filter({ id: connectionId });
     const conn = connections?.[0];
