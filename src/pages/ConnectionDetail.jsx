@@ -54,6 +54,8 @@ export default function ConnectionDetail() {
   const [webflowFields, setWebflowFields] = useState([]);
   const [loadingWebflow, setLoadingWebflow] = useState(false);
   const [syncingNow, setSyncingNow] = useState(false);
+  const [showPCODialog, setShowPCODialog] = useState(false);
+  const [showWebflowDialog, setShowWebflowDialog] = useState(false);
 
   // Fetch connection
   const { data: connection, isLoading: loadingConnection } = useQuery({
