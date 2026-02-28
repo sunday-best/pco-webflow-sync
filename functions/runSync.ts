@@ -219,7 +219,7 @@ async function fetchAllWebflowItems(wfToken, collectionId) {
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const body = await req.json();
-  const { connectionId, trigger = 'scheduled' } = body;
+  const { connectionId, trigger = 'scheduled', forceFullSync = false } = body;
 
   // Allow scheduled calls (no user) or authenticated users
   let user = null;
