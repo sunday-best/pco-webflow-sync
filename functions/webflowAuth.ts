@@ -43,9 +43,7 @@ Deno.serve(async (req) => {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
-  const { action, connectionId, code } = body;
-
-  const redirectUri = `${APP_BASE_URL}/functions/webflowAuth`;
+  const { action, connectionId } = body;
 
   if (action === 'connectApiToken') {
     const { token } = body;
