@@ -43,10 +43,7 @@ Deno.serve(async (req) => {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
-  const { action, connectionId, code } = body;
-
-  // Build redirect URI
-  const redirectUri = `${APP_BASE_URL}/functions/pcoAuth`;
+  const { action, connectionId } = body;
 
   if (action === 'connectPersonalToken') {
     // PCO Personal Access Token - uses HTTP Basic auth (appId:secret)
