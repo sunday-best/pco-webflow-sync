@@ -250,6 +250,18 @@ export default function ConnectionDetail() {
 
   return (
     <div className="space-y-6">
+      <ConnectPCODialog
+        open={showPCODialog}
+        onOpenChange={setShowPCODialog}
+        connectionId={connectionId}
+        onSuccess={handlePCOSuccess}
+      />
+      <ConnectWebflowDialog
+        open={showWebflowDialog}
+        onOpenChange={setShowWebflowDialog}
+        connectionId={connectionId}
+        onSuccess={handleWebflowSuccess}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
