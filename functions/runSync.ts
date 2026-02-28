@@ -328,8 +328,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Handle removed events (in Webflow but not in PCO)
-    for (const item of wfItems) {
+    // Handle removed events - only on full sync (no updatedSince filter)
+    // On incremental sync, we can't detect removals since we only fetched changed events
+    if (!updatedSince) for (const item of wfItems) {
       const pcoId = item.fieldData?.[pcoIdWebflowField];
       if (!pcoId || seenPcoIds.has(pcoId)) continue;
 
