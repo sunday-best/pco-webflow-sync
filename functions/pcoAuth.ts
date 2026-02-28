@@ -1,9 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const PCO_CLIENT_ID = Deno.env.get('PCO_CLIENT_ID');
-const PCO_CLIENT_SECRET = Deno.env.get('PCO_CLIENT_SECRET');
 const ENCRYPTION_KEY = Deno.env.get('ENCRYPTION_KEY');
-const APP_BASE_URL = Deno.env.get('APP_BASE_URL') || 'https://app.base44.com';
 
 async function encrypt(text) {
   const key = await crypto.subtle.importKey(
