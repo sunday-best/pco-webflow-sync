@@ -82,10 +82,17 @@ export default function SyncHistoryTable({ runs, isLoading, connectionId }) {
                   return (
                     <TableRow key={run.id}>
                       <TableCell>
-                        <Badge variant="secondary" className={`${status.color} gap-1`}>
-                          <StatusIcon className={`w-3 h-3 ${status.spin ? 'animate-spin' : ''}`} />
-                          {status.label}
-                        </Badge>
+                        <div className="space-y-1">
+                          <Badge variant="secondary" className={`${status.color} gap-1`}>
+                            <StatusIcon className={`w-3 h-3 ${status.spin ? 'animate-spin' : ''}`} />
+                            {status.label}
+                          </Badge>
+                          {run.error_summary && (
+                            <p className="text-xs text-red-600 max-w-[200px] truncate" title={run.error_summary}>
+                              {run.error_summary}
+                            </p>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
