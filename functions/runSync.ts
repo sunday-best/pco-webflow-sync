@@ -269,8 +269,9 @@ Deno.serve(async (req) => {
     const pcoToken = await decrypt(conn.pco_access_token);
     const wfToken = await decrypt(conn.webflow_access_token);
 
-    // Fetch PCO events
-    const pcoEvents = await fetchAllPcoEvents(pcoToken);
+    // Fetch PCO events - only those updated since last sync (if available)
+    const updatedSince = conn.last_sync_at || null;
+    const pcoEvents = await fetchAllPcoEvents(pcoToken, updatedSince);
     stats.pco_events_fetched = pcoEvents.length;
 
     // Fetch all existing Webflow items
