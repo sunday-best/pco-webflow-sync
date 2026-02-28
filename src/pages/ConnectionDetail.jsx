@@ -169,20 +169,15 @@ export default function ConnectionDetail() {
     }
   });
 
-  const handleConnectPCO = async () => {
-    // In a real implementation, this would trigger OAuth flow
-    // For now, we'll use a placeholder
-    const result = await base44.functions.invoke('pcoAuth', { action: 'getAuthUrl', connectionId });
-    if (result.data?.url) {
-      window.location.href = result.data.url;
-    }
+  const handleConnectPCO = () => setShowPCODialog(true);
+  const handleConnectWebflow = () => setShowWebflowDialog(true);
+
+  const handlePCOSuccess = (data) => {
+    queryClient.invalidateQueries({ queryKey: ['connection', connectionId] });
   };
 
-  const handleConnectWebflow = async () => {
-    const result = await base44.functions.invoke('webflowAuth', { action: 'getAuthUrl', connectionId });
-    if (result.data?.url) {
-      window.location.href = result.data.url;
-    }
+  const handleWebflowSuccess = (data) => {
+    queryClient.invalidateQueries({ queryKey: ['connection', connectionId] });
   };
 
   const handleSiteChange = async (siteId) => {
