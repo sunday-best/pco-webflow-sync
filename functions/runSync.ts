@@ -40,10 +40,8 @@ async function withRetry(fn, maxAttempts = 3) {
 }
 
 async function pcoRequest(token, path) {
-  // token may be a Basic auth string (base64 appId:secret) or a Bearer token
-  const authHeader = token.includes(':') || token.length < 80
-    ? `Bearer ${token}`
-    : `Basic ${token}`;
+  // Decrypted value is always the Basic auth base64 string (from Personal Access Token)
+  const authHeader = `Basic ${token}`;
   const res = await fetch(`https://api.planningcenteronline.com${path}`, {
     headers: {
       Authorization: authHeader,
