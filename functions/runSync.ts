@@ -57,9 +57,13 @@ async function pcoRequest(token, path) {
   return res.json();
 }
 
-async function fetchAllPcoEvents(pcoToken) {
+async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
   let allEvents = [];
-  let nextUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
+  let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
+  if (updatedSince) {
+    baseUrl += `&where[updated_at][gte]=${encodeURIComponent(updatedSince)}`;
+  }
+  let nextUrl = baseUrl;
 
   while (nextUrl) {
     const data = await withRetry(() => pcoRequest(pcoToken, nextUrl));
