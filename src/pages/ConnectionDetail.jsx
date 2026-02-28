@@ -27,6 +27,8 @@ import {
 import { Link } from 'react-router-dom';
 import FieldMappingEditor from '@/components/connection/FieldMappingEditor';
 import SyncHistoryTable from '@/components/connection/SyncHistoryTable';
+import ConnectPCODialog from '@/components/connection/ConnectPCODialog';
+import ConnectWebflowDialog from '@/components/connection/ConnectWebflowDialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,
