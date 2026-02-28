@@ -48,11 +48,17 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import Dashboard from './pages/Dashboard';
+import NewConnection from './pages/NewConnection';
+import ConnectionDetail from './pages/ConnectionDetail';
+import SyncRunDetail from './pages/SyncRunDetail';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Dashboard": Dashboard,
+    "NewConnection": NewConnection,
+    "ConnectionDetail": ConnectionDetail,
+    "SyncRunDetail": SyncRunDetail,
 }
 
 export const pagesConfig = {
