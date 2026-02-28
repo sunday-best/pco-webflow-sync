@@ -23,12 +23,15 @@ Deno.serve(async (req) => {
 
   const results = [];
 
+  const { forceFullSync = false } = await req.json().catch(() => ({}));
+
   // Run syncs sequentially to avoid rate limit issues
   for (const conn of connections) {
     try {
       const res = await base44.asServiceRole.functions.invoke('runSync', {
         connectionId: conn.id,
-        trigger: 'scheduled'
+        trigger: 'scheduled',
+        forceFullSync
       });
       results.push({ connectionId: conn.id, name: conn.name, status: 'triggered', result: res });
     } catch (err) {
