@@ -74,7 +74,7 @@ async function fetchPublicCalendarRegistrationUrls(pcoToken) {
   return publicUrls;
 }
 
-async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
+async function fetchAllPcoEvents(pcoToken, updatedSince = null, publicCalendarUrls = null) {
   let allEvents = [];
   let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
   if (updatedSince) {
@@ -93,8 +93,11 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
-      // Skip events not published to Church Center (link-only or hidden have no public registration URL)
+      // Skip events with no registration URL
       if (!attrs.new_registration_url) continue;
+
+      // Cross-reference with Calendar: skip events not visible in Church Center
+      if (publicCalendarUrls !== null && !publicCalendarUrls.has(attrs.new_registration_url)) continue;
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
