@@ -291,8 +291,17 @@ export default function ConnectionDetail() {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
+            onClick={() => syncMutation.mutate({ forceFullSync: true })}
+            disabled={!canSync || syncingNow || forcingSyncNow}
+            title="Clears all Webflow items and re-syncs from scratch"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${forcingSyncNow ? 'animate-spin' : ''}`} />
+            {forcingSyncNow ? 'Syncing...' : 'Full Sync'}
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => syncMutation.mutate()}
-            disabled={!canSync || syncingNow}
+            disabled={!canSync || syncingNow || forcingSyncNow}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${syncingNow ? 'animate-spin' : ''}`} />
             {syncingNow ? 'Syncing...' : 'Sync Now'}
