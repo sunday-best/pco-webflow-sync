@@ -58,7 +58,7 @@ async function pcoRequest(token, path) {
 }
 
 
-async function fetchAllPcoEvents(pcoToken, updatedSince = null, publicCalendarUrls = null) {
+async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
   let allEvents = [];
   let baseUrl = `/registrations/v2/signups?per_page=100&include=signup_location,next_signup_time`;
   if (updatedSince) {
