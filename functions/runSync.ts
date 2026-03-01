@@ -301,18 +301,19 @@ Deno.serve(async (req) => {
       seenPcoIds.add(pcoId);
       const fieldData = buildWebflowFieldData(pcoEvent, conn.field_mappings || []);
 
-      // On incremental sync, look up the Webflow item by searching for the pco_event_id field
+      // Look up the Webflow item from our map (populated on full sync, or lazily on incremental)
       let existingItem = wfItemMap[pcoId];
-      if (!forceFullSync && !existingItem) {
-        try {
-          const searchResult = await withRetry(() =>
-            webflowRequest(wfToken, `/collections/${conn.webflow_collection_id}/items?${pcoIdWebflowField}=${encodeURIComponent(pcoId)}&limit=1`)
-          );
-          existingItem = searchResult.items?.[0] || null;
-          if (existingItem) wfItemMap[pcoId] = existingItem;
-        } catch (_) {
-          existingItem = null;
+      if (!forceFullSync && existingItem === undefined) {
+        // On incremental sync, we fetch all items once and cache them if not done yet
+        if (wfItems.length === 0) {
+          wfItems = await fetchAllWebflowItems(wfToken, conn.webflow_collection_id);
+          stats.webflow_items_fetched = wfItems.length;
+          for (const item of wfItems) {
+            const id = item.fieldData?.[pcoIdWebflowField];
+            if (id) wfItemMap[id] = item;
+          }
         }
+        existingItem = wfItemMap[pcoId] || null;
       }
 
       try {
