@@ -57,6 +57,23 @@ async function pcoRequest(token, path) {
   return res.json();
 }
 
+async function fetchPublicCalendarRegistrationUrls(pcoToken) {
+  const publicUrls = new Set();
+  let offset = 0;
+  const limit = 100;
+  while (true) {
+    const data = await withRetry(() => pcoRequest(pcoToken, `/calendar/v2/events?where[visible_in_church_center]=true&per_page=${limit}&offset=${offset}`));
+    const events = data.data || [];
+    for (const event of events) {
+      const url = event.attributes?.registration_url;
+      if (url) publicUrls.add(url);
+    }
+    if (events.length < limit) break;
+    offset += limit;
+  }
+  return publicUrls;
+}
+
 async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
   let allEvents = [];
   let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
