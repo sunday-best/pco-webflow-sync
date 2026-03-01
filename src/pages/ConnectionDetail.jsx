@@ -154,11 +154,14 @@ export default function ConnectionDetail() {
     }
   });
 
+  const [forcingSyncNow, setForcingSyncNow] = useState(false);
+
   // Sync now mutation
   const syncMutation = useMutation({
-    mutationFn: async () => {
-      setSyncingNow(true);
-      return base44.functions.invoke('runSync', { connectionId, trigger: 'manual' });
+    mutationFn: async ({ forceFullSync = false } = {}) => {
+      if (forceFullSync) setForcingSyncNow(true);
+      else setSyncingNow(true);
+      return base44.functions.invoke('runSync', { connectionId, trigger: 'manual', forceFullSync });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['connection', connectionId] });
@@ -166,6 +169,7 @@ export default function ConnectionDetail() {
     },
     onSettled: () => {
       setSyncingNow(false);
+      setForcingSyncNow(false);
     }
   });
 
