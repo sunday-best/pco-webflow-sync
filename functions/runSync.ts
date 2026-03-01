@@ -93,7 +93,7 @@ async function fetchPublicCalendarRegistrationUrls(pcoToken) {
 
 async function fetchAllPcoEvents(pcoToken, updatedSince = null, publicCalendarUrls = null) {
   let allEvents = [];
-  let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
+  let baseUrl = `/registrations/v2/signups?per_page=100&include=signup_location,next_signup_time`;
   if (updatedSince) {
     baseUrl += `&where[updated_at][gte]=${encodeURIComponent(updatedSince)}`;
   }
