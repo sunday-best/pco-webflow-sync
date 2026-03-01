@@ -76,9 +76,6 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
-      // Skip events not published to Church Center (no public registration URL = link-only or hidden)
-      if (!attrs.new_registration_url) continue;
-
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
       const location = locationRel
