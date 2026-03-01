@@ -114,7 +114,13 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null, publicCalendarUr
       if (!attrs.new_registration_url) continue;
 
       // Cross-reference with Calendar: skip events not visible in Church Center
-      if (publicCalendarUrls !== null && !publicCalendarUrls.has(attrs.new_registration_url)) continue;
+      if (publicCalendarUrls !== null) {
+        const normalizedSignupUrl = normalizeUrl(attrs.new_registration_url);
+        if (!normalizedSignupUrl || !publicCalendarUrls.has(normalizedSignupUrl)) {
+          console.log(`[Filter] SKIPPED "${attrs.name}" — not found in Calendar public events (url: ${attrs.new_registration_url})`);
+          continue;
+        }
+      }
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
