@@ -294,7 +294,9 @@ Deno.serve(async (req) => {
 
     // Fetch PCO events - only those updated since last sync (if available), unless forced full sync
     const updatedSince = forceFullSync ? null : (conn.last_sync_at || null);
-    const pcoEvents = await fetchAllPcoEvents(pcoToken, updatedSince);
+    // Fetch Calendar events visible in Church Center for cross-reference filtering
+    const publicCalendarUrls = await fetchPublicCalendarRegistrationUrls(pcoToken);
+    const pcoEvents = await fetchAllPcoEvents(pcoToken, updatedSince, publicCalendarUrls);
     stats.pco_events_fetched = pcoEvents.length;
 
     // Build lookup map: pco_event_id → webflow item
