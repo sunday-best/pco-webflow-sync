@@ -76,6 +76,9 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
+      // Skip link-only or hidden events (not publicly listed on Church Center)
+      if (!attrs.public_church_center_web_url) continue;
+
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
       const location = locationRel
