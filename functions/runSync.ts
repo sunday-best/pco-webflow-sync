@@ -318,8 +318,21 @@ Deno.serve(async (req) => {
     // Fetch PCO events - only those updated since last sync (if available), unless forced full sync
     const updatedSince = forceFullSync ? null : (conn.last_sync_at || null);
     // Fetch Calendar events visible in Church Center for cross-reference filtering
-    const publicCalendarUrls = await fetchPublicCalendarRegistrationUrls(pcoToken);
+    let publicCalendarUrls = null;
+    try {
+      publicCalendarUrls = await fetchPublicCalendarRegistrationUrls(pcoToken);
+      console.log(`[Sync] Got ${publicCalendarUrls.size} public calendar URLs`);
+      // If we got 0 public URLs, skip filtering entirely to avoid blocking all events
+      if (publicCalendarUrls.size === 0) {
+        console.log(`[Sync] WARNING: 0 public calendar URLs found — skipping calendar filter to avoid blocking all events`);
+        publicCalendarUrls = null;
+      }
+    } catch (calErr) {
+      console.log(`[Sync] WARNING: Could not fetch calendar events (${calErr.message}) — skipping calendar filter`);
+      publicCalendarUrls = null;
+    }
     const pcoEvents = await fetchAllPcoEvents(pcoToken, updatedSince, publicCalendarUrls);
+    console.log(`[Sync] PCO events after filter: ${pcoEvents.length}`);
     stats.pco_events_fetched = pcoEvents.length;
 
     // Build lookup map: pco_event_id → webflow item
