@@ -76,10 +76,8 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
-      // Skip events that are not "listed" or "featured" - exclude "link_only" and hidden
-      const listed = attrs.listed;
-      const featured = attrs.featured;
-      if (!listed && !featured) continue;
+      // Skip events not published to Church Center (no public registration URL = link-only or hidden)
+      if (!attrs.new_registration_url) continue;
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
