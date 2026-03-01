@@ -314,12 +314,25 @@ Deno.serve(async (req) => {
 
       try {
         if (existingItem) {
+          // Compare existing Webflow field data to new data - skip if unchanged
+          const existingFieldData = existingItem.fieldData || {};
+          const hasChanges = Object.keys(fieldData).some(key => {
+            const newVal = fieldData[key] == null ? '' : String(fieldData[key]);
+            const oldVal = existingFieldData[key] == null ? '' : String(existingFieldData[key]);
+            return newVal !== oldVal;
+          });
+
+          if (!hasChanges) {
+            stats.skipped++;
+            eventLog.push({ pco_event_id: pcoId, event_name: pcoEvent['event.name'], action: 'skip', webflow_item_id: existingItem.id, success: true });
+          } else {
           // Update
           await withRetry(() => webflowRequest(wfToken, `/collections/${conn.webflow_collection_id}/items/${existingItem.id}`, 'PATCH', { fieldData }));
           // Publish
           await withRetry(() => webflowRequest(wfToken, `/collections/${conn.webflow_collection_id}/items/publish`, 'POST', { itemIds: [existingItem.id] }));
           stats.updated++;
           eventLog.push({ pco_event_id: pcoId, event_name: pcoEvent['event.name'], action: 'update', webflow_item_id: existingItem.id, success: true });
+          }
         } else {
           // Create
           const created = await withRetry(() => webflowRequest(wfToken, `/collections/${conn.webflow_collection_id}/items`, 'POST', { fieldData }));
