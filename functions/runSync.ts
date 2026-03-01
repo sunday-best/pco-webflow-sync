@@ -57,39 +57,6 @@ async function pcoRequest(token, path) {
   return res.json();
 }
 
-function normalizeUrl(url) {
-  if (!url) return null;
-  try {
-    const u = new URL(url);
-    // Normalize: lowercase hostname + pathname without trailing slash
-    return (u.hostname + u.pathname).toLowerCase().replace(/\/$/, '');
-  } catch {
-    return url.toLowerCase().replace(/\/$/, '');
-  }
-}
-
-async function fetchPublicCalendarRegistrationUrls(pcoToken) {
-  const publicUrls = new Set();
-  let offset = 0;
-  const limit = 100;
-  while (true) {
-    const data = await withRetry(() => pcoRequest(pcoToken, `/calendar/v2/events?where[visible_in_church_center]=true&per_page=${limit}&offset=${offset}`));
-    const events = data.data || [];
-    console.log(`[Calendar] fetched ${events.length} visible events at offset ${offset}`);
-    for (const event of events) {
-      const url = event.attributes?.registration_url;
-      if (url) {
-        const normalized = normalizeUrl(url);
-        if (normalized) publicUrls.add(normalized);
-        console.log(`[Calendar] public event: "${event.attributes?.name}" → ${url}`);
-      }
-    }
-    if (events.length < limit) break;
-    offset += limit;
-  }
-  console.log(`[Calendar] total public registration URLs: ${publicUrls.size}`);
-  return publicUrls;
-}
 
 async function fetchAllPcoEvents(pcoToken, updatedSince = null, publicCalendarUrls = null) {
   let allEvents = [];
