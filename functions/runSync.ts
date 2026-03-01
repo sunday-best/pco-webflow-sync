@@ -76,6 +76,10 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
+      // Skip "link only" events - only sync "listed" or "featured"
+      const publicUrlType = attrs.public_url_type || attrs.listing_type || '';
+      if (publicUrlType === 'link_only') continue;
+
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
       const location = locationRel
