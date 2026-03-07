@@ -76,8 +76,7 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
-      // Skip "link only" events (not public or hidden visibility)
-      if (attrs.public === false || attrs.visibility === 'hidden') continue;
+      console.log(`[PCO DEBUG] signup ${signup.id} attrs:`, JSON.stringify(attrs));
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
