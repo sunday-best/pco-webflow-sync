@@ -59,7 +59,7 @@ async function pcoRequest(token, path) {
 
 async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
   let allEvents = [];
-  let baseUrl = `/registrations/v2/signups?where[archived]=false&where[visibility]=public&per_page=100&include=signup_location,next_signup_time`;
+  let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
   if (updatedSince) {
     baseUrl += `&where[updated_at][gte]=${encodeURIComponent(updatedSince)}`;
   }
@@ -76,8 +76,8 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
-      // Skip "link only" events (visibility = 'hidden' in PCO)
-      if (attrs.visibility === 'hidden') continue;
+      // Skip "link only" events (not public or hidden visibility)
+      if (attrs.public === false || attrs.visibility === 'hidden') continue;
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
