@@ -76,7 +76,8 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
-      console.log(`[PCO DEBUG] signup ${signup.id} attrs:`, JSON.stringify(attrs));
+      // Skip "link only" events (not listed on Church Center signups page)
+      if (attrs.church_center_listed === false) continue;
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
