@@ -47,17 +47,17 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import ConnectionDetail from './pages/ConnectionDetail';
 import Dashboard from './pages/Dashboard';
 import NewConnection from './pages/NewConnection';
+import ConnectionDetail from './pages/ConnectionDetail';
 import SyncRunDetail from './pages/SyncRunDetail';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "ConnectionDetail": ConnectionDetail,
     "Dashboard": Dashboard,
     "NewConnection": NewConnection,
+    "ConnectionDetail": ConnectionDetail,
     "SyncRunDetail": SyncRunDetail,
 }
 

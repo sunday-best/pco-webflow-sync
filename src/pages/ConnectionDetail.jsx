@@ -154,14 +154,11 @@ export default function ConnectionDetail() {
     }
   });
 
-  const [forcingSyncNow, setForcingSyncNow] = useState(false);
-
   // Sync now mutation
   const syncMutation = useMutation({
-    mutationFn: async ({ forceFullSync = false } = {}) => {
-      if (forceFullSync) setForcingSyncNow(true);
-      else setSyncingNow(true);
-      return base44.functions.invoke('runSync', { connectionId, trigger: 'manual', forceFullSync });
+    mutationFn: async () => {
+      setSyncingNow(true);
+      return base44.functions.invoke('runSync', { connectionId, trigger: 'manual' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['connection', connectionId] });
@@ -169,7 +166,6 @@ export default function ConnectionDetail() {
     },
     onSettled: () => {
       setSyncingNow(false);
-      setForcingSyncNow(false);
     }
   });
 
@@ -291,17 +287,8 @@ export default function ConnectionDetail() {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={() => syncMutation.mutate({ forceFullSync: true })}
-            disabled={!canSync || syncingNow || forcingSyncNow}
-            title="Clears all Webflow items and re-syncs from scratch"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${forcingSyncNow ? 'animate-spin' : ''}`} />
-            {forcingSyncNow ? 'Syncing...' : 'Full Sync'}
-          </Button>
-          <Button
-            variant="outline"
             onClick={() => syncMutation.mutate()}
-            disabled={!canSync || syncingNow || forcingSyncNow}
+            disabled={!canSync || syncingNow}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${syncingNow ? 'animate-spin' : ''}`} />
             {syncingNow ? 'Syncing...' : 'Sync Now'}

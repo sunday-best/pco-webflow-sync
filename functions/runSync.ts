@@ -57,10 +57,9 @@ async function pcoRequest(token, path) {
   return res.json();
 }
 
-
 async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
   let allEvents = [];
-  let baseUrl = `/registrations/v2/signups?per_page=100&include=signup_location,next_signup_time`;
+  let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
   if (updatedSince) {
     baseUrl += `&where[updated_at][gte]=${encodeURIComponent(updatedSince)}`;
   }
@@ -76,10 +75,6 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
 
       // Skip archived
       if (attrs.archived) continue;
-
-      // Skip events with no registration URL
-      if (!attrs.new_registration_url) continue;
-
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
@@ -303,19 +298,18 @@ Deno.serve(async (req) => {
       seenPcoIds.add(pcoId);
       const fieldData = buildWebflowFieldData(pcoEvent, conn.field_mappings || []);
 
-      // Look up the Webflow item from our map (populated on full sync, or lazily on incremental)
+      // On incremental sync, look up the Webflow item by searching for the pco_event_id field
       let existingItem = wfItemMap[pcoId];
-      if (!forceFullSync && existingItem === undefined) {
-        // On incremental sync, we fetch all items once and cache them if not done yet
-        if (wfItems.length === 0) {
-          wfItems = await fetchAllWebflowItems(wfToken, conn.webflow_collection_id);
-          stats.webflow_items_fetched = wfItems.length;
-          for (const item of wfItems) {
-            const id = item.fieldData?.[pcoIdWebflowField];
-            if (id) wfItemMap[id] = item;
-          }
+      if (!forceFullSync && !existingItem) {
+        try {
+          const searchResult = await withRetry(() =>
+            webflowRequest(wfToken, `/collections/${conn.webflow_collection_id}/items?${pcoIdWebflowField}=${encodeURIComponent(pcoId)}&limit=1`)
+          );
+          existingItem = searchResult.items?.[0] || null;
+          if (existingItem) wfItemMap[pcoId] = existingItem;
+        } catch (_) {
+          existingItem = null;
         }
-        existingItem = wfItemMap[pcoId] || null;
       }
 
       try {
