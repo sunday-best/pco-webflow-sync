@@ -77,7 +77,7 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       if (attrs.archived) continue;
 
       // Skip "link only" events (not listed on Church Center signups page)
-      if (!attrs.listed) continue;
+      if (!attrs.listed || attrs.link_only === true || attrs.direct_link_only === true) continue;
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
