@@ -1,7 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const ENCRYPTION_KEY = Deno.env.get('ENCRYPTION_KEY');
-const NOTIFICATION_EMAIL = Deno.env.get('NOTIFICATION_EMAIL');
 
 async function decrypt(encryptedText) {
   const combined = Uint8Array.from(atob(encryptedText), c => c.charCodeAt(0));
