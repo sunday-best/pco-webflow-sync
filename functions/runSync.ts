@@ -89,7 +89,7 @@ async function fetchAllPcoEvents(pcoToken, publicEventIds, updatedSince = null) 
       if (attrs.archived) continue;
 
       // Only include events visible on the public Church Center events page
-      if (!publicEventIds.has(signup.id)) continue;
+      if (publicEventIds && !publicEventIds.has(signup.id)) continue;
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
