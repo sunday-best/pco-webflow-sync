@@ -72,7 +72,7 @@ async function fetchPublicChurchCenterEventIds(churchCenterBaseUrl) {
 
 async function fetchAllPcoEvents(pcoToken, publicEventIds, updatedSince = null) {
   let allEvents = [];
-  let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
+  let baseUrl = `/registrations/v2/events?where[archived]=false&per_page=100&include=event_location,event_times`;
   if (updatedSince) {
     baseUrl += `&where[updated_at][gte]=${encodeURIComponent(updatedSince)}`;
   }
