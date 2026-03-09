@@ -417,7 +417,8 @@ Deno.serve(async (req) => {
     });
 
     // Send failure notification after 3 consecutive failures
-    const notificationEmail = Deno.env.get('NOTIFICATION_EMAIL');
+    const notifKey = 'NOTIFICATION_EMAIL';
+    const notificationEmail = Deno.env.get(notifKey);
     if (newConsecutiveFailures === 3 && notificationEmail) {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: notificationEmail,
