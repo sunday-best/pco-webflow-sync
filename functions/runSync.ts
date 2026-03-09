@@ -69,7 +69,7 @@ async function fetchPublicChurchCenterEventIds(churchCenterBaseUrl) {
   return ids;
 }
 
-async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
+async function fetchAllPcoEvents(pcoToken, publicEventIds, updatedSince = null) {
   let allEvents = [];
   let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
   if (updatedSince) {
@@ -88,8 +88,8 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
-      // Skip events with no open_at date - these are unpublished/link-only placeholder events
-      if (!attrs.open_at) continue;
+      // Only include events visible on the public Church Center events page
+      if (!publicEventIds.has(signup.id)) continue;
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
