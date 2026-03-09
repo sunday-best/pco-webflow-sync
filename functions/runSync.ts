@@ -57,6 +57,18 @@ async function pcoRequest(token, path) {
   return res.json();
 }
 
+async function fetchPublicChurchCenterEventIds(churchCenterBaseUrl) {
+  const res = await fetch(`${churchCenterBaseUrl}/registrations/events`, {
+    headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'text/html' }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch Church Center events page: ${res.status}`);
+  const html = await res.text();
+  // Extract event IDs from links like /registrations/events/3176425
+  const matches = [...html.matchAll(/\/registrations\/events\/(\d+)/g)];
+  const ids = new Set(matches.map(m => m[1]));
+  return ids;
+}
+
 async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
   let allEvents = [];
   let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
