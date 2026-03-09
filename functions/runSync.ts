@@ -275,19 +275,13 @@ Deno.serve(async (req) => {
     const pcoEvents = await fetchAllPcoEvents(pcoToken, updatedSince);
     stats.pco_events_fetched = pcoEvents.length;
 
-    // Build lookup map: pco_event_id → webflow item
-    // On full sync: fetch all Webflow items upfront for removal detection
-    // On incremental sync: skip bulk fetch to save API calls; look up per-event on-demand
+    // Always fetch all Webflow items upfront to build a reliable lookup map
     const wfItemMap = {};
-    let wfItems = [];
-
-    if (forceFullSync) {
-      wfItems = await fetchAllWebflowItems(wfToken, conn.webflow_collection_id);
-      stats.webflow_items_fetched = wfItems.length;
-      for (const item of wfItems) {
-        const pcoId = item.fieldData?.[pcoIdWebflowField];
-        if (pcoId) wfItemMap[pcoId] = item;
-      }
+    const wfItems = await fetchAllWebflowItems(wfToken, conn.webflow_collection_id);
+    stats.webflow_items_fetched = wfItems.length;
+    for (const item of wfItems) {
+      const pcoId = item.fieldData?.[pcoIdWebflowField];
+      if (pcoId) wfItemMap[pcoId] = item;
     }
 
     // Track which PCO event IDs we saw
