@@ -1,6 +1,7 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const ENCRYPTION_KEY = Deno.env.get('ENCRYPTION_KEY');
+const NOTIFICATION_EMAIL = Deno.env.get('NOTIFICATION_EMAIL');
 
 async function decrypt(encryptedText) {
   const combined = Uint8Array.from(atob(encryptedText), c => c.charCodeAt(0));
@@ -290,17 +291,12 @@ Deno.serve(async (req) => {
     let publicEventIds = null;
     if (churchCenterBaseUrl) {
       publicEventIds = await fetchPublicChurchCenterEventIds(churchCenterBaseUrl);
-      console.log(`[SYNC] Church Center public event IDs found: ${publicEventIds.size}`, [...publicEventIds].slice(0, 10));
-    } else {
-      console.log('[SYNC] No church_center_url set - skipping public filter');
     }
 
     // Fetch PCO events - only those updated since last sync (if available), unless forced full sync
     const updatedSince = forceFullSync ? null : (conn.last_sync_at || null);
-    console.log(`[SYNC] updatedSince=${updatedSince}, forceFullSync=${forceFullSync}`);
     const pcoEvents = await fetchAllPcoEvents(pcoToken, publicEventIds, updatedSince);
     stats.pco_events_fetched = pcoEvents.length;
-    console.log(`[SYNC] PCO events after filtering: ${pcoEvents.length}`);
 
     // Always fetch all Webflow items upfront to build a reliable lookup map
     const wfItemMap = {};
@@ -422,11 +418,9 @@ Deno.serve(async (req) => {
     });
 
     // Send failure notification after 3 consecutive failures
-    const notifKey = 'NOTIFICATION_EMAIL';
-    const notificationEmail = Deno.env.get(notifKey);
-    if (newConsecutiveFailures === 3 && notificationEmail) {
+    if (newConsecutiveFailures === 3 && NOTIFICATION_EMAIL) {
       await base44.asServiceRole.integrations.Core.SendEmail({
-        to: notificationEmail,
+        to: NOTIFICATION_EMAIL,
         subject: `[PCO Sync] Connection "${conn.name}" has failed 3 times in a row`,
         body: `The connection "${conn.name}" has failed 3 consecutive sync runs.\n\nLast error: ${errorDetails[0]?.error_message || 'Unknown'}\n\nPlease check the connection settings.`
       });
