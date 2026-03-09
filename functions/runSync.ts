@@ -269,16 +269,9 @@ Deno.serve(async (req) => {
     const pcoToken = await decrypt(conn.pco_access_token);
     const wfToken = await decrypt(conn.webflow_access_token);
 
-    // Fetch public event IDs from Church Center to filter to only publicly visible events
-    const churchCenterBaseUrl = (conn.church_center_url || '').replace(/\/$/, '');
-    let publicEventIds = null;
-    if (churchCenterBaseUrl) {
-      publicEventIds = await fetchPublicChurchCenterEventIds(churchCenterBaseUrl);
-    }
-
     // Fetch PCO events - only those updated since last sync (if available), unless forced full sync
     const updatedSince = forceFullSync ? null : (conn.last_sync_at || null);
-    const pcoEvents = await fetchAllPcoEvents(pcoToken, publicEventIds, updatedSince);
+    const pcoEvents = await fetchAllPcoEvents(pcoToken, updatedSince);
     stats.pco_events_fetched = pcoEvents.length;
 
     // Always fetch all Webflow items upfront to build a reliable lookup map
