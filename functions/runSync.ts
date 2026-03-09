@@ -91,9 +91,10 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
         : null;
       const nextTimeAttrs = nextTime?.attributes || {};
 
-      // DEBUG: log raw attributes for investigation
-      if (attrs.name && (attrs.name.includes('20s') || attrs.name.includes('TEMPLATE'))) {
-        console.log('DEBUG signup attrs:', JSON.stringify({ id: signup.id, name: attrs.name, ...attrs }));
+      // DEBUG: log ALL attribute keys for first few events
+      if (attrs.name && attrs.name.includes('20s&30s DECEMBER')) {
+        console.log('DEBUG ALL KEYS for', attrs.name, ':', JSON.stringify(Object.keys(attrs)));
+        console.log('DEBUG FULL ATTRS:', JSON.stringify(attrs));
       }
 
       const description = attrs.description || '';
