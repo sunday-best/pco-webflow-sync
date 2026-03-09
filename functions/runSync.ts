@@ -293,19 +293,7 @@ Deno.serve(async (req) => {
       seenPcoIds.add(pcoId);
       const fieldData = buildWebflowFieldData(pcoEvent, conn.field_mappings || []);
 
-      // On incremental sync, look up the Webflow item by searching for the pco_event_id field
-      let existingItem = wfItemMap[pcoId];
-      if (!forceFullSync && !existingItem) {
-        try {
-          const searchResult = await withRetry(() =>
-            webflowRequest(wfToken, `/collections/${conn.webflow_collection_id}/items?${pcoIdWebflowField}=${encodeURIComponent(pcoId)}&limit=1`)
-          );
-          existingItem = searchResult.items?.[0] || null;
-          if (existingItem) wfItemMap[pcoId] = existingItem;
-        } catch (_) {
-          existingItem = null;
-        }
-      }
+      const existingItem = wfItemMap[pcoId] || null;
 
       try {
         if (existingItem) {
