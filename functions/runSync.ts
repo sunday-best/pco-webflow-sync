@@ -59,7 +59,7 @@ async function pcoRequest(token, path) {
 
 async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
   let allEvents = [];
-  let baseUrl = `/registrations/v2/events?filter=unarchived,published&per_page=100&include=event_location,event_times&order=starts_at`;
+  let baseUrl = `/registrations/v2/signups?where[archived]=false&per_page=100&include=signup_location,next_signup_time`;
   if (updatedSince) {
     baseUrl += `&where[updated_at][gte]=${encodeURIComponent(updatedSince)}`;
   }
