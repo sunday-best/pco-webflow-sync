@@ -452,6 +452,25 @@ export default function ConnectionDetail() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
+                <Label>Church Center URL</Label>
+                <p className="text-sm text-slate-500 mb-2">
+                  Your Church Center base URL. Only events publicly listed on your Church Center events page will be synced.
+                </p>
+                <Input
+                  placeholder="https://yourchurch.churchcenter.com"
+                  defaultValue={connection.church_center_url || ''}
+                  onBlur={(e) => {
+                    const val = e.target.value.trim();
+                    if (val !== (connection.church_center_url || '')) {
+                      updateMutation.mutate({ church_center_url: val });
+                    }
+                  }}
+                />
+              </div>
+
+              <Separator />
+
+              <div>
                 <Label>On PCO Event Removal</Label>
                 <p className="text-sm text-slate-500 mb-2">
                   What happens when an event is archived or deleted in PCO?
