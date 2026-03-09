@@ -78,16 +78,16 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       if (attrs.registration_state === 'link') continue;
 
       // Find location from included
-      const locationRel = signup.relationships?.signup_location?.data;
+      const locationRel = signup.relationships?.event_location?.data;
       const location = locationRel
-        ? included.find(i => i.type === 'SignupLocation' && i.id === locationRel.id)
+        ? included.find(i => i.type === 'EventLocation' && i.id === locationRel.id)
         : null;
       const locAttrs = location?.attributes || {};
 
-      // Find next signup time
-      const nextTimeRel = signup.relationships?.next_signup_time?.data;
-      const nextTime = nextTimeRel
-        ? included.find(i => i.type === 'SignupTime' && i.id === nextTimeRel.id)
+      // Find next event time
+      const eventTimesRel = signup.relationships?.event_times?.data;
+      const nextTime = eventTimesRel?.length
+        ? included.find(i => i.type === 'EventTime' && i.id === eventTimesRel[0].id)
         : null;
       const nextTimeAttrs = nextTime?.attributes || {};
 
