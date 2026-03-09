@@ -76,6 +76,8 @@ async function fetchAllPcoEvents(pcoToken, updatedSince = null) {
       // Skip archived
       if (attrs.archived) continue;
 
+      // Skip events with no open_at date - these are unpublished/link-only placeholder events
+      if (!attrs.open_at) continue;
 
       // Find location from included
       const locationRel = signup.relationships?.signup_location?.data;
