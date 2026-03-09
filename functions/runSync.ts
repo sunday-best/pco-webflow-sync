@@ -58,7 +58,9 @@ async function pcoRequest(token, path) {
 }
 
 async function fetchPublicChurchCenterEventIds(churchCenterBaseUrl) {
-  const res = await fetch(`${churchCenterBaseUrl}/registrations/events`, {
+  // Normalize: strip any trailing path like /registrations/events so we always use the base URL
+  const baseUrl = churchCenterBaseUrl.replace(/\/registrations.*$/, '').replace(/\/$/, '');
+  const res = await fetch(`${baseUrl}/registrations/events`, {
     headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'text/html' }
   });
   if (!res.ok) throw new Error(`Failed to fetch Church Center events page: ${res.status}`);
