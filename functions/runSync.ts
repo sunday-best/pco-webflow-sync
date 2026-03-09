@@ -290,12 +290,17 @@ Deno.serve(async (req) => {
     let publicEventIds = null;
     if (churchCenterBaseUrl) {
       publicEventIds = await fetchPublicChurchCenterEventIds(churchCenterBaseUrl);
+      console.log(`[SYNC] Church Center public event IDs found: ${publicEventIds.size}`, [...publicEventIds].slice(0, 10));
+    } else {
+      console.log('[SYNC] No church_center_url set - skipping public filter');
     }
 
     // Fetch PCO events - only those updated since last sync (if available), unless forced full sync
     const updatedSince = forceFullSync ? null : (conn.last_sync_at || null);
+    console.log(`[SYNC] updatedSince=${updatedSince}, forceFullSync=${forceFullSync}`);
     const pcoEvents = await fetchAllPcoEvents(pcoToken, publicEventIds, updatedSince);
     stats.pco_events_fetched = pcoEvents.length;
+    console.log(`[SYNC] PCO events after filtering: ${pcoEvents.length}`);
 
     // Always fetch all Webflow items upfront to build a reliable lookup map
     const wfItemMap = {};
