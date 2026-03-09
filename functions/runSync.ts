@@ -417,9 +417,10 @@ Deno.serve(async (req) => {
     });
 
     // Send failure notification after 3 consecutive failures
-    if (newConsecutiveFailures === 3 && NOTIFICATION_EMAIL) {
+    const notificationEmail = Deno.env.get('NOTIFICATION_EMAIL');
+    if (newConsecutiveFailures === 3 && notificationEmail) {
       await base44.asServiceRole.integrations.Core.SendEmail({
-        to: NOTIFICATION_EMAIL,
+        to: notificationEmail,
         subject: `[PCO Sync] Connection "${conn.name}" has failed 3 times in a row`,
         body: `The connection "${conn.name}" has failed 3 consecutive sync runs.\n\nLast error: ${errorDetails[0]?.error_message || 'Unknown'}\n\nPlease check the connection settings.`
       });
